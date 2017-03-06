@@ -175,39 +175,7 @@ if(validateUser($username, $password)) {
 }
 	
 }
-// create SQL based on HTTP method
-/*
-switch ($method) {
-  case 'GET':
-    $sql = "SELECT value FROM $table".($key?" WHERE id=$key":''); break;
-  case 'PUT':
-    $sql = "UPDATE IGNORE$table SET value=$input WHERE id=$key"; break;
-  case 'POST':
-    $sql = "INSERT IGNORE INTO $table VALUES(NULL, $input)"; break;
-  case 'DELETE':
-    $sql = "DELETE $table WHERE id=$key"; break;
-}
- */
-// excecute SQL statement
-//$result = mysqli_query($link,$sql);
- 
-// die if SQL statement failed
 
- 
-// print results, INSERT IGNORE id or affected row count
-/*
-if ($method == 'GET') {
-	foreach($result->fetch_array(MYSQLI_NUM) AS $row)
-	{
-		echo $row;
-	}
-} elseif ($method == 'POST') {
-  echo mysqli_insert_id($link);
-} else {
-  echo mysqli_affected_rows($link);
-}
-} 
-*/
 // close mysql connection
 mysqli_close($link);
 
