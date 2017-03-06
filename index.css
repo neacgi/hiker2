@@ -1,0 +1,26 @@
+
+
+html, body { 
+	width:100%; 
+	height:100%; 
+}
+
+canvas { 
+	display:block; 
+}
+
+#edit {
+	Position: absolute;
+	Top: 10px;
+	Right: 10px;
+}
+
+#editDiv {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0px;
+	left: 0px;
+	background-color: rgba(255,0,0,0.4);
+	display:none;
+}
