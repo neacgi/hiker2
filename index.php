@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
 <script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
-<link rel="stylesheet" href="index.css" />
+<link rel="stylesheet" href="https://hiker.serwr.com/index.css" />
 <!-- <link rel="stylesheet" type="text/css" href="index.css"></link> -->
 <script>
 var windowSize = 0;
@@ -78,7 +78,7 @@ function addPlaces(places)
 		longitute = ((longitute-lowestLng) / (highestLng-lowestLng))*(windowSize/scale)+((window.innerWidth-(windowSize/scale))/2);
 		latitude = ((latitude-lowestLat) / (highestLat-lowestLat))*(windowSize/scale)+((window.innerHeight-(windowSize/scale))/2);
 		
-		addPlace(latitude, longitute, radius/2, getColor());
+		addPlace(latitude, longitute, radius/2, getColor(), place.name, place.info);
 		var imagePlace = 0;
 		addImage(latitude, longitute, 0.1*((windowSize/scale)/2000), "7lMkBSY.jpg", place.name, imagePlace++);
 		jQuery.each(place.media, function(mediaId, med)
@@ -103,23 +103,41 @@ function addText(latitude, longitude, name, text, imagePlace)
 	update = true;
 }
 
-function addPlace(latitude, longitude, radius, color)
+function addPlace(latitude, longitude, radius, color, name, info)
 {
 	var circle = new createjs.Shape();
 		circle.graphics.setStrokeStyle(15, 'round', 'round').beginStroke(color).drawCircle(0, 0, radius);
 		circle.x = longitude;
 		circle.y = latitude;
-		circle.addEventListener("rollover", function(event) { 
+		circle.addEventListener("mouseover", function(event) { 
 			var circle2 = new createjs.Shape();
 			circle2.graphics.beginFill("Black").drawCircle(0, 0, radius/2);
 			circle2.x = longitude;
 			circle2.y = latitude;
-			circle2.addEventListener("rollout", function(event) { 
-				this.clear();
-				update = true;
-			})
 			stage.addChild(circle2);
+			stage.circle2 = circle2;
+			var placeBackground = new createjs.Shape();
+			placeBackground.graphics.beginFill("#ffffff");
+			placeBackground.graphics.drawRoundRect (event.stageX-5, event.stageY-5, (info.length*10)+10, 50, 10, 10, 10, 10);
+			stage.addChild(placeBackground);
+			stage.placeBackground = placeBackground;
+			var placeName = new createjs.Text(name, "15px Arial", getColor());
+				placeName.x = event.stageX;
+				placeName.y = event.stageY;
+			var placeInfo = new createjs.Text(info, "15px Arial", getColor()); 
+				placeInfo.x = event.stageX;
+				placeInfo.y = event.stageY+20;
+			stage.addChild(placeName);
+			stage.addChild(placeInfo);
+			stage.placeName = placeName;
+			stage.placeInfo = placeInfo;
 			update = true;
+		})
+		circle.addEventListener("mouseout", function(event) { 
+			stage.removeChild(stage.circle2);
+			stage.removeChild(stage.placeName);
+			stage.removeChild(stage.placeInfo);
+			stage.removeChild(stage.placeBackground);
 		})
 		stage.addChild(circle);
 		update = true;
@@ -176,7 +194,7 @@ function handleImageLoad()
 	update = true;
 }
 
-function addPath(polylines)
+function addPath(polylines, name, info, length, duration)
 {
 	var line = new createjs.Shape();
 	var firststep = true;
@@ -193,6 +211,33 @@ function addPath(polylines)
 			longitute = ((longitute-lowestLng) / (highestLng-lowestLng))*(windowSize/scale)+((window.innerWidth-(windowSize/scale))/2);
 			latitude = ((latitude-lowestLat) / (highestLat-lowestLat))*(windowSize/scale)+((window.innerHeight-(windowSize/scale))/2);
 			line.graphics.mt(longitute, latitude);
+				
+			
+			var nameText = new createjs.Text(name, "15px Arial", getColor());
+				nameText.x = longitute;
+				nameText.y = latitude;
+				nameText.alpha = 0;
+			var infoText = new createjs.Text(info, "10px Arial", getColor());
+				infoText.x = nameText.x
+				infoText.y = nameText.y + 20;
+				infoText.alpha = 0;
+			var durationText = new createjs.Text("Duration: " + duration, "10px Arial", getColor());
+				durationText.x = nameText.x
+				durationText.y = nameText.y + 30;
+				durationText.alpha = 0;
+			var lengthText = new createjs.Text("Length: " + length, "10px Arial", getColor());
+				lengthText.x = nameText.x
+				lengthText.y = nameText.y + 40;
+				lengthText.alpha = 0;
+			 
+			 stage.addChild(nameText);
+			 stage.addChild(infoText);
+			 stage.addChild(durationText);
+			 stage.addChild(lengthText);
+			 stage.nameText = nameText;
+			 stage.infoText = infoText;
+			 stage.durationText = durationText;
+			 stage.lengthText = lengthText;
 		}
 		else
 		{
@@ -201,9 +246,28 @@ function addPath(polylines)
 			line.graphics.lt(longitute, latitude);
 		}
 	});
-	line.addEventListener("click", function(event) { 
-			console.log(stage);
-		})
+	line.addEventListener("mouseover", function(event) { 
+			stage.nameText.x = event.stageX;
+			stage.infoText.x = event.stageX;
+			stage.durationText.x = event.stageX;
+			stage.lengthText.x = event.stageX;
+			stage.nameText.y = event.stageY;
+			stage.infoText.y = event.stageY + 20;
+			stage.durationText.y = event.stageY + 40;
+			stage.lengthText.y = event.stageY + 60;
+			stage.nameText.alpha = 1;
+			stage.infoText.alpha = 1;
+			stage.durationText.alpha = 1;
+			stage.lengthText.alpha = 1;
+			update = true;
+	});	
+	line.addEventListener("mouseout", function(event) { 
+			stage.nameText.alpha = 0;
+			stage.infoText.alpha = 0;
+			stage.durationText.alpha = 0;
+			stage.lengthText.alpha = 0;
+			update = true;
+	});
 	stage.addChild(line);
 	update = true;
 }
@@ -283,7 +347,7 @@ function drawMap() {
 		{
 			
 		    addPlaces(path.places);
-			addPath(path.polyline);
+			addPath(path.polyline, path.name, path.info, path.length, path.duration);
 			
 		});
    });
@@ -316,7 +380,7 @@ function drawEmptyFormBundle() {
 	   html += '<li class="ui-field-contain">';	
 		html += '<div data-role="controlgroup" data-type="horizontal">';
 		    html += '<a onclick=\'deleteDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=bundle")\' class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-left">Delete</a>';
-			html += '<a onclick=\'drawEmptyFormBundle();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">Duplicate</a>';
+			html += '<a onclick=\'drawEmptyFormBundle();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">New</a>';
 			html += '<a onclick=\'updateDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=bundle")\' class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-left">Update</a>';
 	   html += '</div>';
 	   html += '</li></ul>';	   
@@ -345,7 +409,7 @@ function drawFormBundle(bundleId, value) {
 	   html += '<li class="ui-field-contain">';	
 		html += '<div data-role="controlgroup" data-type="horizontal">';
 		    html += '<a onclick=\'deleteDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=bundle")\' class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-left">Delete</a>';
-			html += '<a onclick=\'drawEmptyFormBundle();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">Duplicate</a>';
+			html += '<a onclick=\'drawEmptyFormBundle();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">New</a>';
 			html += '<a onclick=\'updateDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=bundle")\' class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-left">Update</a>';
 	   html += '</div>';
 	   html += '</li></ul>';	   
@@ -386,7 +450,7 @@ function drawEmptyFormPath() {
 	   html += '<li class="ui-field-contain">';	
 		html += '<div data-role="controlgroup" data-type="horizontal">';
 		    html += '<a onclick=\'deleteDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=path")\' class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-left">Delete</a>';
-			html += '<a onclick=\'drawEmptyFormPath();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">Duplicate</a>';
+			html += '<a onclick=\'drawEmptyFormPath();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">New</a>';
 			html += '<a onclick=\'updateDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=path")\' class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-left">Update</a>';
 	   html += '</div>';
 	   html += '</li></ul>';	   
@@ -427,7 +491,7 @@ function drawFormPath(pathId, value, bundleId) {
 	   html += '<li class="ui-field-contain">';	
 		html += '<div data-role="controlgroup" data-type="horizontal">';
 		    html += '<a onclick=\'deleteDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=path")\' class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-left">Delete</a>';
-			html += '<a onclick=\'drawEmptyFormPath();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">Duplicate</a>';
+			html += '<a onclick=\'drawEmptyFormPath();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">New</a>';
 			html += '<a onclick=\'updateDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=path")\' class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-left">Update</a>';
 	   html += '</div>';
 	   html += '</li></ul>';	   
@@ -468,7 +532,7 @@ function drawEmptyFormPlace() {
 	   html += '<li class="ui-field-contain">';	
 		html += '<div data-role="controlgroup" data-type="horizontal">';
 		    html += '<a onclick=\'deleteDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=place")\' class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-left">Delete</a>';
-			html += '<a onclick=\'drawEmptyFormPlace();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">Duplicate</a>';
+			html += '<a onclick=\'drawEmptyFormPlace();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">New</a>';
 			html += '<a onclick=\'updateDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=place")\' class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-left">Update</a>';
 	   html += '</div>';
 	   html += '</li></ul>';	   
@@ -509,7 +573,7 @@ function drawFormPlace(placeId, value, pathId) {
 	   html += '<li class="ui-field-contain">';	
 		html += '<div data-role="controlgroup" data-type="horizontal">';
 		    html += '<a onclick=\'deleteDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=place")\' class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-left">Delete</a>';
-			html += '<a onclick=\'drawEmptyFormPlace();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">Duplicate</a>';
+			html += '<a onclick=\'drawEmptyFormPlace();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">New</a>';
 			html += '<a onclick=\'updateDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=place")\' class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-left">Update</a>';
 	   html += '</div>';
 	   html += '</li></ul>';	   
@@ -538,7 +602,7 @@ function drawEmptyFormPolyline() {
 	   html += '<li class="ui-field-contain">';	
 		html += '<div data-role="controlgroup" data-type="horizontal">';
 		    html += '<a onclick=\'deleteDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=polyline")\' class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-left">Delete</a>';
-			html += '<a onclick=\'drawEmptyFormPolyline();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">Duplicate</a>';
+			html += '<a onclick=\'drawEmptyFormPolyline();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">New</a>';
 			html += '<a onclick=\'updateDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=polyline")\' class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-left">Update</a>';
 	   html += '</div>';
 	   html += '</li></ul>';	   
@@ -567,7 +631,7 @@ function drawFormPolyline(polylineId, value, pathId) {
 	   html += '<li class="ui-field-contain">';	
 		html += '<div data-role="controlgroup" data-type="horizontal">';
 		    html += '<a onclick=\'deleteDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=polyline")\' class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-left">Delete</a>';
-			html += '<a onclick=\'drawEmptyFormPolyline();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">Duplicate</a>';
+			html += '<a onclick=\'drawEmptyFormPolyline();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">New</a>';
 			html += '<a onclick=\'updateDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=polyline")\' class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-left">Update</a>';
 	   html += '</div>';
 	   html += '</li></ul>';	   
@@ -596,7 +660,7 @@ function drawFormMedia(mediaId, value, placeName) {
 	   html += '<li class="ui-field-contain">';	
 		html += '<div data-role="controlgroup" data-type="horizontal">';
 		    html += '<a onclick=\'deleteDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=media")\' class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-left">Delete</a>';
-			html += '<a onclick=\'drawEmptyFormMedia();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">Duplicate</a>';
+			html += '<a onclick=\'drawEmptyFormMedia();\' class="ui-btn ui-corner-all ui-icon-recycle ui-btn-icon-left">New</a>';
 			html += '<a onclick=\'updateDatabase($(this).parent().parent().parent().parent().find("input").serialize() + "&type=media")\' class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-left">Update</a>';
 	   html += '</div>';
 	   html += '</li></ul>';	   
